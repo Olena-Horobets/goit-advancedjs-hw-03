@@ -1,7 +1,3 @@
-// import axios from 'axios';
-
-// axios.defaults.headers.common['x-api-key'] =
-//   'live_o0DjDhD9sQJ8vSBYerclRajz3qjShq8uQvqFj4h0k2iq6Aj7uknNu1uxnQrOZVNB';
 import { fetchBreeds, fetchCatByBreed } from './cat-api';
 
 const refs = {
@@ -39,6 +35,11 @@ function createMainMarkup({
 
 function onSelectChange(e) {
   const value = e.currentTarget.value;
+
+  refs.loader.classList.remove('hidden');
+  refs.catInfo.classList.add('hidden');
+  refs.error.classList.add('hidden');
+
   fetchCatByBreed(value, params)
     .then(res => {
       const cat = JSON.parse(localStorage.getItem('breeds')).find(
@@ -49,15 +50,26 @@ function onSelectChange(e) {
         ...cat,
         url: res[0].url,
       });
+
+      refs.catInfo.classList.remove('hidden');
     })
-    .catch(error => console.log('error', error));
+    .catch(error => {
+      refs.error.classList.remove('hidden');
+      console.log('error', error);
+    })
+    .finally(refs.loader.classList.add('hidden'));
 }
 
 fetchBreeds(params)
   .then(res => {
     localStorage.setItem('breeds', JSON.stringify(res));
     refs.select.innerHTML = createSelectMarkup(res);
+    refs.select.classList.remove('hidden');
   })
-  .catch(error => console.log('error', error));
+  .catch(error => {
+    console.log('error', error);
+    refs.error.classList.remove('hidden');
+  })
+  .finally(refs.loader.classList.add('hidden'));
 
 refs.select.addEventListener('change', onSelectChange);
